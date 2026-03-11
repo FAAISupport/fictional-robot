@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { createSupabaseAdminClient } from "@/lib/supabase/clients";
 import { fail, ok } from "@/utils/api";
+import { waitlistPublicLeaderboard } from "@/services/waitlist/waitlist.service";
 
 const schema = z.object({
   type: z.enum(["all_time", "weekly", "geo"]).default("all_time"),
@@ -16,19 +16,6 @@ export async function GET(request: Request) {
 
   if (!parsed.success) return fail("VALIDATION_ERROR", "Invalid leaderboard query", 422, parsed.error.flatten());
 
-  const supabase = createSupabaseAdminClient();
-  let query = supabase
-    .from("leaderboard_snapshots")
-    .select("snapshot_type,region_key,waitlist_user_id,rank,referral_count,score,snapshot_date")
-    .eq("snapshot_type", parsed.data.type)
-    .order("snapshot_date", { ascending: false })
-    .order("rank", { ascending: true })
-    .limit(50);
-
-  if (parsed.data.type === "geo" && parsed.data.region) {
-    query = query.eq("region_key", parsed.data.region);
-  }
-
-  const { data } = await query;
-  return ok({ leaderboard: data ?? [] });
+  const leaderboard = await waitlistPublicLeaderboard(parsed.data.type, parsed.data.region);
+  return ok({ leaderboard });
 }

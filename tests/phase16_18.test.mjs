@@ -12,7 +12,10 @@ const requiredFiles = [
   'LAUNCH_CHECKLIST_PHASE18.md',
   'PHASE16_TESTING_AND_SEED.md',
   'PHASE17_DEPLOYMENT_AND_WEBHOOKS.md',
-  'PHASE18_LAUNCH.md'
+  'PHASE18_LAUNCH.md',
+  'app/how-it-works/page.tsx',
+  'components/waitlist/WaitlistJoinForm.tsx',
+  'app/api/waitlist/stats/route.ts'
 ];
 
 const requiredCronRoutes = [
@@ -27,7 +30,7 @@ const requiredCronRoutes = [
   'app/api/cron/stale-incidents/route.ts'
 ];
 
-test('phase 16-18 required files exist', () => {
+test('phase files and marketing waitlist assets exist', () => {
   for (const file of requiredFiles) {
     assert.equal(fs.existsSync(file), true, `missing required file: ${file}`);
   }

@@ -5,6 +5,22 @@ function createReferralCode(name: string) {
   return `${base}${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
+async function uniqueReferralCode(name: string) {
+  const supabase = createSupabaseAdminClient();
+  for (let i = 0; i < 10; i += 1) {
+    const code = createReferralCode(name);
+    const { data } = await supabase
+      .from("waitlist_users")
+      .select("id")
+      .eq("referral_code", code)
+      .maybeSingle();
+
+    if (!data) return code;
+  }
+
+  return `${Date.now().toString(36)}${Math.floor(Math.random() * 9999)}`;
+}
+
 function deriveBetaEligibility(referralCount: number) {
   if (referralCount >= 25) return "founder_reward";
   if (referralCount >= 10) return "guaranteed_beta";
@@ -23,7 +39,17 @@ export async function joinWaitlist(input: {
 }) {
   const supabase = createSupabaseAdminClient();
 
-  const ownCode = createReferralCode(input.name);
+  const { data: existing } = await supabase
+    .from("waitlist_users")
+    .select("id, email, referral_code, joined_at, referral_count, spots_gained, beta_eligibility")
+    .eq("email", input.email)
+    .maybeSingle();
+
+  if (existing) {
+    return existing;
+  }
+
+  const ownCode = await uniqueReferralCode(input.name);
   let referredBy: string | null = null;
 
   if (input.referralCode) {
@@ -54,7 +80,7 @@ export async function joinWaitlist(input: {
     throw new Error(`waitlist_join_failed:${error?.message}`);
   }
 
-  if (referredBy) {
+  if (referredBy && input.referralCode) {
     await supabase.from("referrals").insert({
       referrer_waitlist_user_id: referredBy,
       referred_waitlist_user_id: user.id,
@@ -109,13 +135,21 @@ export async function waitlistDashboard(email: string) {
     .limit(1)
     .maybeSingle();
 
+  const { data: inviteHistory } = await supabase
+    .from("referrals")
+    .select("created_at, referred_waitlist_user_id")
+    .eq("referrer_waitlist_user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(25);
+
   const referralUrl = `${process.env.NEXT_PUBLIC_APP_URL}/waitlist?ref=${user.referral_code}`;
 
   return {
     ...user,
-    waitlistPosition: (aheadCount ?? 0) + 1 - (user.spots_gained ?? 0),
+    waitlistPosition: Math.max(1, (aheadCount ?? 0) + 1 - (user.spots_gained ?? 0)),
     leaderboardRank: allRanks?.rank ?? null,
     referralUrl,
+    inviteHistory: inviteHistory ?? [],
     nextMilestone:
       user.referral_count < 1
         ? "1 referral = move up 5 spots"
@@ -127,6 +161,61 @@ export async function waitlistDashboard(email: string) {
               ? "10 referrals = guaranteed beta"
               : "25 referrals = founder reward"
   };
+}
+
+export async function waitlistPublicStats() {
+  const supabase = createSupabaseAdminClient();
+  const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [{ count: total }, { count: joinedWeek }, { count: referralsWeek }] = await Promise.all([
+    supabase.from("waitlist_users").select("id", { count: "exact", head: true }),
+    supabase.from("waitlist_users").select("id", { count: "exact", head: true }).gte("joined_at", weekStart),
+    supabase.from("referrals").select("id", { count: "exact", head: true }).gte("created_at", weekStart)
+  ]);
+
+  return {
+    totalPeople: total ?? 0,
+    joinedThisWeek: joinedWeek ?? 0,
+    referralsThisWeek: referralsWeek ?? 0
+  };
+}
+
+export async function waitlistPublicLeaderboard(type: "all_time" | "weekly" | "geo", region?: string) {
+  const supabase = createSupabaseAdminClient();
+  let query = supabase
+    .from("leaderboard_snapshots")
+    .select("waitlist_user_id, rank, referral_count, score, snapshot_date, region_key")
+    .eq("snapshot_type", type)
+    .order("snapshot_date", { ascending: false })
+    .order("rank", { ascending: true })
+    .limit(20);
+
+  if (type === "geo" && region) {
+    query = query.eq("region_key", region);
+  }
+
+  const { data: rows } = await query;
+  if (!rows || rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.waitlist_user_id);
+  const { data: users } = await supabase.from("waitlist_users").select("id,name,city,state").in("id", ids);
+
+  const map = new Map((users ?? []).map((u) => [u.id, u]));
+
+  return rows.map((r) => {
+    const u = map.get(r.waitlist_user_id);
+    const maskedName = u?.name ? `${u.name.split(" ")[0]} ${u.name.split(" ")[1]?.[0] ?? ""}.` : "Member";
+    return {
+      rank: r.rank,
+      referralCount: r.referral_count,
+      score: r.score,
+      snapshotDate: r.snapshot_date,
+      region: r.region_key,
+      displayName: maskedName,
+      city: u?.city ?? null,
+      state: u?.state ?? null
+    };
+  });
 }
 
 export async function refreshLeaderboards(snapshotDate: string) {
