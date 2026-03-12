@@ -1,66 +1,131 @@
 import Link from "next/link";
 import { waitlistPublicStats } from "@/services/waitlist/waitlist.service";
+import { VERTICALS } from "@/lib/marketing/verticals";
+
+const faqs = [
+  {
+    q: "Does LifeSignal require a smartphone?",
+    a: "No. LifeSignal supports SMS and voice workflows for any basic phone, including press-1 call check-ins."
+  },
+  {
+    q: "How does escalation acknowledgment work?",
+    a: "Delivery does not equal acknowledgment. A guardian must explicitly acknowledge through a secure action."
+  },
+  {
+    q: "Is risk scoring AI diagnosis?",
+    a: "No. It is an explainable rules-based routine stability indicator based on observed platform behavior."
+  }
+];
 
 export default async function HomePage() {
   const stats = await waitlistPublicStats();
 
   return (
     <main className="bg-white">
-      <section className="mx-auto grid max-w-6xl gap-8 px-6 py-14 md:grid-cols-2 md:py-20">
+      <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-2 md:py-20">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-calm-700">LifeSignal</p>
-          <h1 className="mt-3 text-4xl font-semibold text-slate-900 md:text-5xl">
-            We check in. They respond. If not, we escalate.
-          </h1>
+          <p className="text-sm font-semibold uppercase tracking-wider text-calm-700">LifeSignal safety infrastructure</p>
+          <h1 className="mt-3 text-4xl font-semibold text-slate-900 md:text-5xl">We check in. They respond. If not, we escalate.</h1>
           <p className="mt-5 text-lg text-slate-600">
-            Built for seniors, families, and care teams. LifeSignal runs SMS and voice wellness check-ins with transparent,
-            auditable escalation paths.
+            LifeSignal automates daily check-ins for seniors, recovery participants, and monitored residents with transparent, auditable escalation flows.
           </p>
+
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/waitlist" className="rounded-lg bg-calm-700 px-5 py-3 text-white">
               Join beta waitlist
             </Link>
             <Link href="/how-it-works" className="rounded-lg border border-slate-300 px-5 py-3 text-slate-800">
-              How it works
+              See how it works
             </Link>
           </div>
-          <div className="mt-6 flex gap-6 text-sm text-slate-600">
-            <p>
-              <span className="font-semibold text-slate-900">{stats.totalPeople}</span> on waitlist
-            </p>
-            <p>
-              <span className="font-semibold text-slate-900">{stats.joinedThisWeek}</span> joined this week
-            </p>
-            <p>
-              <span className="font-semibold text-slate-900">{stats.referralsThisWeek}</span> referrals this week
-            </p>
+
+          <div className="mt-6 grid grid-cols-3 gap-3 text-center text-sm">
+            <Stat value={String(stats.totalPeople)} label="On waitlist" />
+            <Stat value={String(stats.joinedThisWeek)} label="Joined this week" />
+            <Stat value={String(stats.referralsThisWeek)} label="Referrals this week" />
           </div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h2 className="text-xl font-semibold text-slate-900">Built for no-app simplicity</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Trusted for calm, accessible safety workflows</h2>
           <ul className="mt-4 space-y-3 text-slate-700">
-            <li>• SMS reply YES or voice press 1 confirmation</li>
-            <li>• Multi-step reminders and escalation routing</li>
-            <li>• Guardian network with explicit acknowledgment links</li>
-            <li>• Routine stability insights for caregivers and agencies</li>
+            <li>• SMS YES and voice press-1 check-ins</li>
+            <li>• Multi-attempt reminders with adaptive retries</li>
+            <li>• Tiered guardian/family/agency escalation</li>
+            <li>• Explainable routine consistency trends</li>
+            <li>• Audit logs for every safety-critical event</li>
           </ul>
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-            <Link href="/senior" className="rounded bg-white px-3 py-2 text-center">
-              Senior view
+            <Link href="/senior" className="rounded bg-white px-3 py-2 text-center">Senior dashboard</Link>
+            <Link href="/caregiver" className="rounded bg-white px-3 py-2 text-center">Caregiver dashboard</Link>
+            <Link href="/agency" className="rounded bg-white px-3 py-2 text-center">Agency dashboard</Link>
+            <Link href="/reports" className="rounded bg-white px-3 py-2 text-center">Reports</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <h2 className="text-2xl font-semibold text-slate-900">Built for every care vertical</h2>
+        <p className="mt-2 text-slate-600">Open each vertical page to see specific outcomes and the matching operational dashboard.</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {VERTICALS.map((v) => (
+            <Link key={v.slug} href={`/verticals/${v.slug}`} className="rounded-xl border border-slate-200 p-4 hover:border-calm-500">
+              <p className="font-semibold text-slate-900">{v.title}</p>
+              <p className="mt-2 text-sm text-slate-600">{v.summary}</p>
             </Link>
-            <Link href="/caregiver" className="rounded bg-white px-3 py-2 text-center">
-              Caregiver view
-            </Link>
-            <Link href="/agency" className="rounded bg-white px-3 py-2 text-center">
-              Agency ops
-            </Link>
-            <Link href="/billing" className="rounded bg-white px-3 py-2 text-center">
-              Billing plans
-            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <h2 className="text-2xl font-semibold text-slate-900">Operational intelligence without fake AI claims</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <Info title="Routine stability" text="Daily explainable scoring from missed check-ins, response latency, retries, and intervention frequency." />
+          <Info title="Threshold alerts" text="Crossings are persisted and surfaced to caregivers/agencies with human-readable explanations." />
+          <Info title="Weekly reporting" text="Check-in rates, misses, escalations, and trend summaries generated by secure cron routes." />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <h2 className="text-2xl font-semibold text-slate-900">Frequently asked questions</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {faqs.map((f) => (
+            <article key={f.q} className="rounded-xl border border-slate-200 p-4">
+              <h3 className="font-semibold text-slate-900">{f.q}</h3>
+              <p className="mt-2 text-sm text-slate-600">{f.a}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-14">
+        <div className="rounded-2xl bg-calm-700 p-8 text-white">
+          <h2 className="text-3xl font-semibold">Launch with your safety circle</h2>
+          <p className="mt-2 text-blue-100">Join beta, invite guardians, and track your referral progress in the waitlist dashboard.</p>
+          <div className="mt-5 flex gap-3">
+            <Link href="/waitlist" className="rounded-lg bg-white px-5 py-3 text-calm-700">Join beta</Link>
+            <Link href="/waitlist/dashboard" className="rounded-lg border border-blue-200 px-5 py-3 text-white">Open waitlist dashboard</Link>
           </div>
         </div>
       </section>
     </main>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <p className="text-2xl font-semibold text-slate-900">{value}</p>
+      <p className="text-slate-600">{label}</p>
+    </div>
+  );
+}
+
+function Info({ title, text }: { title: string; text: string }) {
+  return (
+    <article className="rounded-xl border border-slate-200 p-4">
+      <h3 className="font-semibold text-slate-900">{title}</h3>
+      <p className="mt-2 text-sm text-slate-600">{text}</p>
+    </article>
   );
 }

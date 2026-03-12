@@ -15,7 +15,10 @@ const requiredFiles = [
   'PHASE17_DEPLOYMENT_AND_WEBHOOKS.md',
   'PHASE18_LAUNCH.md',
   'app/how-it-works/page.tsx',
+  'app/verticals/[slug]/page.tsx',
   'components/waitlist/WaitlistJoinForm.tsx',
+  'components/marketing/TopNav.tsx',
+  'components/marketing/Footer.tsx',
   'app/api/waitlist/stats/route.ts'
 ];
 
