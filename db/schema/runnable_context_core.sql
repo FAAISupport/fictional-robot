@@ -1,7 +1,8 @@
 -- Runnable core-context SQL aligned to the LifeSignal repository schema.
 -- This script is intentionally limited to the subset discussed in review:
 -- profiles, agencies, agency_members, monitored_people, contacts,
--- guardian_network, guardian_invites, schedules, waitlist_users.
+-- guardian_network, guardian_invites, schedules, waitlist_users,
+-- referrals, referral_events, leaderboard_snapshots.
 --
 -- Safe to run repeatedly due to IF NOT EXISTS and idempotent helpers.
 
@@ -233,5 +234,41 @@ drop trigger if exists trg_waitlist_users_updated on public.waitlist_users;
 create trigger trg_waitlist_users_updated
 before update on public.waitlist_users
 for each row execute function public.set_updated_at();
+
+create table if not exists public.referrals (
+  id uuid primary key default gen_random_uuid(),
+  referrer_waitlist_user_id uuid not null references public.waitlist_users(id) on delete cascade,
+  referred_waitlist_user_id uuid not null references public.waitlist_users(id) on delete cascade,
+  referral_code text not null,
+  status text not null check (status in ('pending','qualified','rejected')) default 'qualified',
+  created_at timestamptz not null default now(),
+  unique (referrer_waitlist_user_id, referred_waitlist_user_id)
+);
+
+create index if not exists idx_referrals_referrer on public.referrals(referrer_waitlist_user_id, created_at desc);
+
+create table if not exists public.referral_events (
+  id uuid primary key default gen_random_uuid(),
+  waitlist_user_id uuid not null references public.waitlist_users(id) on delete cascade,
+  event_type text not null,
+  event_payload jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.leaderboard_snapshots (
+  id uuid primary key default gen_random_uuid(),
+  snapshot_type text not null check (snapshot_type in ('all_time','weekly','geo')),
+  region_key text,
+  waitlist_user_id uuid not null references public.waitlist_users(id) on delete cascade,
+  rank int not null,
+  referral_count int not null,
+  score int not null,
+  snapshot_date date not null,
+  region_key_normalized text generated always as (coalesce(region_key, '')) stored,
+  created_at timestamptz not null default now(),
+  unique (snapshot_type, region_key_normalized, waitlist_user_id, snapshot_date)
+);
+
+create index if not exists idx_leaderboard_snapshots_lookup on public.leaderboard_snapshots(snapshot_type, snapshot_date, rank);
 
 commit;
