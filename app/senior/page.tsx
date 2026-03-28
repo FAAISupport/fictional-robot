@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/clients";
 import { seniorDashboardData } from "@/services/dashboard/dashboard.service";
 
 export default async function SeniorDashboardPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/clients";
 import type { AppRole, AuthContext } from "@/types/domain";
 
 export async function requireAuth(allowedRoles?: AppRole[]): Promise<AuthContext | NextResponse> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

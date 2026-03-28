@@ -21,7 +21,7 @@ function Queue({ title, rows }: { title: string; rows: Array<{ name: string; ris
 }
 
 export default async function AgencyDashboardPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

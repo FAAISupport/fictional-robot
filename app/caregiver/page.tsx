@@ -9,7 +9,7 @@ function riskBadge(level: string) {
 }
 
 export default async function CaregiverDashboardPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
