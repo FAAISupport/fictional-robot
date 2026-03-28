@@ -56,10 +56,12 @@ export default async function HomePage() {
             <li>• Audit logs for every safety-critical event</li>
           </ul>
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-            <Link href="/senior" className="rounded bg-white px-3 py-2 text-center">Senior dashboard</Link>
-            <Link href="/caregiver" className="rounded bg-white px-3 py-2 text-center">Caregiver dashboard</Link>
-            <Link href="/agency" className="rounded bg-white px-3 py-2 text-center">Agency dashboard</Link>
-            <Link href="/reports" className="rounded bg-white px-3 py-2 text-center">Reports</Link>
+            <Link href="/demo-dashboards/family" className="rounded bg-white px-3 py-2 text-center">Family dashboard</Link>
+            <Link href="/demo-dashboards/caregiver" className="rounded bg-white px-3 py-2 text-center">Caregiver dashboard</Link>
+            <Link href="/demo-dashboards/postop" className="rounded bg-white px-3 py-2 text-center">PostOp dashboard</Link>
+            <Link href="/demo-dashboards/recover" className="rounded bg-white px-3 py-2 text-center">Recover dashboard</Link>
+            <Link href="/demo-dashboards/church-os" className="rounded bg-white px-3 py-2 text-center">Church OS dashboard</Link>
+            <Link href="/church-demo/setup" className="rounded bg-white px-3 py-2 text-center">Church demo wizard</Link>
           </div>
         </div>
       </section>

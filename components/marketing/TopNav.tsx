@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const navItems = [
   { href: "/how-it-works", label: "How it works" },
-  { href: "/verticals/seniors", label: "Verticals" },
-  { href: "/waitlist", label: "Beta waitlist" },
-  { href: "/reports", label: "Reports" },
+  { href: "/postop", label: "PostOp" },
+  { href: "/church-demo/setup", label: "Church OS Demo" },
+  { href: "/demo-dashboards/family", label: "Dashboards" },
   { href: "/billing", label: "Pricing" }
 ];
 

@@ -117,7 +117,8 @@ export async function agencyDashboardData(profileId: string) {
     .in("monitored_person_id", residentIds.length ? residentIds : ["00000000-0000-0000-0000-000000000000"])
     .order("snapshot_date", { ascending: false });
 
-  const latestByResident = new Map<string, (typeof snapshots)[number]>();
+  type SnapshotRow = NonNullable<typeof snapshots>[number];
+  const latestByResident = new Map<string, SnapshotRow>();
   for (const snap of snapshots ?? []) {
     if (!latestByResident.has(snap.monitored_person_id)) latestByResident.set(snap.monitored_person_id, snap);
   }
